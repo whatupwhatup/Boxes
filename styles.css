@@ -1,0 +1,29 @@
+/* Layout styling */
+.info-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: start;
+    flex-wrap: wrap; /* Ensures responsiveness */
+    margin-bottom: 20px; /* Space before the graph */
+}
+.info-item {
+    flex: 1 1 200px; /* Grow, shrink and basis */
+    margin: 5px;
+    padding: 10px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1); /* Subtle shadow for better visibility */
+}
+.graph-container {
+    width: 100%;
+    height: 500px; /* Set a fixed height for the graph */
+}
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+li {
+    padding: 5px 0;
+}
+label, input {
+    display: block; /* Ensure inputs are aligned nicely */
+    margin: 5px 0;
+}
