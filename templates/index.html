@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Geometric Progression Graph and Expected Value</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        /* Layout styling */
+        .info-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: start;
+            flex-wrap: wrap; /* Ensures responsiveness */
+            margin-bottom: 20px; /* Space before the graph */
+        }
+        .info-item {
+            flex: 1 1 200px; /* Grow, shrink and basis */
+            margin: 5px;
+            padding: 10px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1); /* Subtle shadow for better visibility */
+        }
+        .graph-container {
+            width: 100%;
+            height: 500px; /* Set a fixed height for the graph */
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            padding: 5px 0;
+        }
+        label, input {
+            display: block; /* Ensure inputs are aligned nicely */
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Geometric Progression Graph and Expected Value</h1>
+    <div class="info-container">
+        <div class="info-item">
+            <label for="n">Number of Prices (n):</label>
+            <input type="number" id="n" name="n" value="5" oninput="updateGraph()">
+            <label for="r">Common Ratio (r):</label>
+            <input type="range" id="r" name="r" min="0.1" max="2" step="0.01" value="1.1" oninput="updateGraph()">
+            <span id="r-value">1.1</span>
+        </div>
+        <div class="info-item">
+            <h2>Probabilities:</h2>
+            <ul id="probabilitiesList"></ul>
+        </div>
+        <div class="info-item">
+            <h2>Dollar Values:</h2>
+            <div id="dollarValues"></div>
+        </div>
+        <div class="info-item">
+            <h2>Expected Value:</h2>
+            <div id="expectedValue">0</div>
+        </div>
+    </div>
+
+    <!-- Graph is now below and has more space -->
+    <div class="graph-container" id="graph"></div>
+
+    
+
+    <script>
+        const dollarValues = {};  // Store dollar values to prevent reset on update
+
+        function generateGeometricProgression(n, r) {
+    if (r === 1) {
+        // If r is 1, every term is the same as the initial term which will be 1/n to sum up to 1
+        return Array.from({ length: n }, () => 1 / n);
+    } else {
+        const a = (r - 1) / (Math.pow(r, n) - 1);  // Calculate the scale factor a
+        return Array.from({ length: n }, (_, i) => a * Math.pow(r, i));  // Generate each term
+    }
+}
+
+        function calculateTerm(a, r, i) {
+            return a * Math.pow(r, i);
+        }
+
+        function updateGraph() {
+    const n = parseInt(document.getElementById('n').value);
+    const r = parseFloat(document.getElementById('r').value);
+    document.getElementById('r-value').textContent = r.toFixed(2);
+
+    const y = generateGeometricProgression(n, r);  // Generate progression values
+
+    const df = {
+        x: Array.from({length: n}, (_, i) => i + 1),
+        y: y,
+        type: 'scatter',
+        mode: 'lines+markers',
+        marker: {color: 'blue'}
+    };
+
+    const layout = {
+        title: 'Geometric Progression',
+        xaxis: {title: 'Number of Prices'},
+        yaxis: {title: 'Value'}
+    };
+
+    Plotly.newPlot('graph', [df], layout);
+    updateDollarInputs(n);
+    updateProbabilitiesList(y);
+    calculateExpectedValue();
+}
+
+
+        function updateDollarInputs(x) {
+            const container = document.getElementById('dollarValues');
+            container.innerHTML = '';
+            x.forEach(index => {
+                const label = document.createElement('label');
+                label.textContent = `Price ${index} Value: $`;
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.id = `dollarValue${index}`;
+                input.value = dollarValues[index] || '';  // Use stored value
+                input.oninput = () => {
+                    dollarValues[index] = input.value;  // Update stored value
+                    calculateExpectedValue();
+                };
+                container.appendChild(label);
+                container.appendChild(input);
+            });
+        }
+
+        function updateProbabilitiesList(y) {
+            const list = document.getElementById('probabilitiesList');
+            list.innerHTML = '';
+            const total = y.reduce((sum, current) => sum + current, 0);
+            y.forEach((value, index) => {
+                const li = document.createElement('li');
+                li.textContent = `Probability for Price ${index + 1}: ${(value / total).toFixed(8)}`;
+                list.appendChild(li);
+            });
+        }
+
+        function calculateExpectedValue() {
+            var n = parseInt(document.getElementById('n').value);
+            var probabilities = Array.from(document.getElementById('probabilitiesList').children, li => parseFloat(li.textContent.split(':')[1]));
+            var values = Array.from({length: n}, (_, i) => parseFloat(dollarValues[i + 1] || 0));
+            var expectedValue = values.reduce((acc, cur, idx) => acc + cur * probabilities[idx], 0);
+
+            document.getElementById('expectedValue').textContent = `Expected Value: $${expectedValue.toFixed(2)}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateGraph();  // Initial graph display
+        });
+    </script>
+</body>
+</html>
